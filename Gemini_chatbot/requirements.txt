@@ -5,3 +5,4 @@ pypdf2
 python-docx
 speechrecognition
 espeakng
+streamlit-webrtc
