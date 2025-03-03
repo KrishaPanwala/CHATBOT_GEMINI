@@ -5,3 +5,4 @@ pypdf2
 python-docx
 speechrecognition
 pyttsx3
+espeak-ng
