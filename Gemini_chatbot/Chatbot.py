@@ -13,7 +13,7 @@ import streamlit as st
 from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 import speech_recognition as sr
 import numpy as np
-
+import queue
 
 GOOGLE_API_KEY = "AIzaSyCqKX3DNKoYl4d-6shJebCI5PlMhEG-fA0"  # Replace with your actual key
 genai.configure(api_key=GOOGLE_API_KEY)
