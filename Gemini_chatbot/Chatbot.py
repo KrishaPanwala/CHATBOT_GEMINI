@@ -14,9 +14,8 @@ from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 import speech_recognition as sr
 import numpy as np
 import queue
-import os
 
-GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
+api_key = st.secrets["GEMINI"]["API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
 model = genai.GenerativeModel('gemini-1.5-pro-latest')
