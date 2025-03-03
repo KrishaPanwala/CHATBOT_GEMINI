@@ -181,21 +181,15 @@ def image_analysis_interface():
 #             speak(response)
 #             history.append(f"You: {user_input}")
 #             history.append(f"Chatbot: {response}")
-def recv(self, frame):
-        # Convert audio frame to numpy array
-        audio_data = np.frombuffer(frame.to_ndarray(), np.int16)
-        
-        try:
-            # Process audio data to recognize text (sample rate for `recognize_google` is 16000)
-            with sr.AudioData(audio_data.tobytes(), frame_rate=16000, sample_width=2, channels=1) as audio_source:
-                text = self.recognizer.recognize_google(audio_source)
-                self.transcription = text
-                print(f"Recognized Text: {text}")
-        except sr.UnknownValueError:
-            self.transcription = "Could not understand the audio"
-        except sr.RequestError as e:
-            self.transcription = f"Could not request results; {e}"
+class AudioProcessor(AudioProcessorBase):
+    def __init__(self):
+        self.recognizer = sr.Recognizer()
+        self.audio_queue = queue.Queue()
 
+    def recv(self, frame):
+        # Convert the audio frame to bytes for speech recognition
+        audio_data = np.frombuffer(frame.to_ndarray().flatten(), dtype=np.int16)
+        self.audio_queue.put(audio_data)
         return frame
 
 def voice_assistant_interface():
