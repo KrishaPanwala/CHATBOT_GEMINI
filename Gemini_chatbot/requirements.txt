@@ -4,4 +4,4 @@ pillow
 pypdf2
 python-docx
 speechrecognition
-espeak-ng
+espeakng
