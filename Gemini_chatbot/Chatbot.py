@@ -7,7 +7,7 @@ import io
 import PyPDF2  # For PDF files
 from docx import Document  # For DOCX files
 import speech_recognition as sr
-import pyttsx3
+#import pyttsx3
 import re
 
 GOOGLE_API_KEY = "AIzaSyCqKX3DNKoYl4d-6shJebCI5PlMhEG-fA0"  # Replace with your actual key
@@ -16,7 +16,7 @@ genai.configure(api_key=GOOGLE_API_KEY)
 model = genai.GenerativeModel('gemini-1.5-pro-latest')
 
 # Text-to-speech setup
-engine = pyttsx3.init()
+#engine = pyttsx3.init()
 
 # Speech-to-text setup
 recognizer = sr.Recognizer()
@@ -136,17 +136,17 @@ def image_analysis_interface():
                 st.write("Analysis Result:")
                 st.write(result)
 
-def speak(text):
-    try:
-        # Say the text
-        engine.say(text)
+##def speak(text):
+##    try:
+ ##       # Say the text
+ ##       engine.say(text)
 
         # Run the speech event loop, if it's not already running
-        engine.runAndWait()
+  ##      engine.runAndWait()
     
-    except RuntimeError:
+  ##  except RuntimeError:
         # Handle the case where the loop is already running
-        print("Warning: The speech engine is already running. Skipping 'runAndWait' this time.")
+   ##     print("Warning: The speech engine is already running. Skipping 'runAndWait' this time.")
     
 def listen():
     with sr.Microphone() as source:
