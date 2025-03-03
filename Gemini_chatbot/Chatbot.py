@@ -9,6 +9,11 @@ from docx import Document  # For DOCX files
 import speech_recognition as sr
 #import pyttsx3
 import re
+import streamlit as st
+from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
+import speech_recognition as sr
+import numpy as np
+
 
 GOOGLE_API_KEY = "AIzaSyCqKX3DNKoYl4d-6shJebCI5PlMhEG-fA0"  # Replace with your actual key
 genai.configure(api_key=GOOGLE_API_KEY)
@@ -136,46 +141,85 @@ def image_analysis_interface():
                 st.write("Analysis Result:")
                 st.write(result)
 
-##def speak(text):
-##    try:
- ##       # Say the text
- ##       engine.say(text)
+# def speak(text):
+#     try:
+#        # Say the text
+#         engine.say(text)
 
-        # Run the speech event loop, if it's not already running
-  ##      engine.runAndWait()
+#         # Run the speech event loop, if it's not already running
+#         engine.runAndWait()
     
-  ##  except RuntimeError:
-        # Handle the case where the loop is already running
-   ##     print("Warning: The speech engine is already running. Skipping 'runAndWait' this time.")
+#     except RuntimeError:
+#         # Handle the case where the loop is already running
+#         print("Warning: The speech engine is already running. Skipping 'runAndWait' this time.")
     
-def listen():
-    with sr.Microphone() as source:
-        st.write("Listening... (you have 5 seconds)")
-        audio = recognizer.listen(source, timeout=5)  # Add timeout to prevent waiting indefinitely
+# def listen():
+#     with sr.Microphone() as source:
+#         st.write("Listening... (you have 5 seconds)")
+#         audio = recognizer.listen(source, timeout=5)  # Add timeout to prevent waiting indefinitely
+#         try:
+#             text = recognizer.recognize_google(audio)
+#             st.write(f"You said: {text}")
+#             return text
+#         except sr.UnknownValueError:
+#             st.write("Could not understand audio")
+#             return None
+#         except sr.RequestError as e:
+#             st.write(f"Could not request results; {e}")
+#             return None
+
+
+# def voice_assistant_interface():
+#     st.title("Voice Assistant Chatbot")
+#     history = []
+
+#     if st.button("Start Listening"):
+#         user_input = listen()
+#         if user_input:
+#             response = get_gemini_response(user_input, history)
+#             st.write(f"Chatbot: {response}")
+#             speak(response)
+#             history.append(f"You: {user_input}")
+#             history.append(f"Chatbot: {response}")
+def recv(self, frame):
+        # Convert audio frame to numpy array
+        audio_data = np.frombuffer(frame.to_ndarray(), np.int16)
+        
         try:
-            text = recognizer.recognize_google(audio)
-            st.write(f"You said: {text}")
-            return text
+            # Process audio data to recognize text (sample rate for `recognize_google` is 16000)
+            with sr.AudioData(audio_data.tobytes(), frame_rate=16000, sample_width=2, channels=1) as audio_source:
+                text = self.recognizer.recognize_google(audio_source)
+                self.transcription = text
+                print(f"Recognized Text: {text}")
         except sr.UnknownValueError:
-            st.write("Could not understand audio")
-            return None
+            self.transcription = "Could not understand the audio"
         except sr.RequestError as e:
-            st.write(f"Could not request results; {e}")
-            return None
+            self.transcription = f"Could not request results; {e}"
 
+        return frame
 
 def voice_assistant_interface():
-    st.title("Voice Assistant Chatbot")
-    history = []
-
-    if st.button("Start Listening"):
-        user_input = listen()
-        if user_input:
-            response = get_gemini_response(user_input, history)
+    st.title("Real-time Voice Assistant Chatbot")
+    st.write("Speak into the microphone to interact with the chatbot.")
+    
+    # Start the WebRTC audio streaming
+    webrtc_ctx = webrtc_streamer(
+        key="speech-to-text",
+        mode=WebRtcMode.SENDRECV,
+        audio_processor_factory=AudioProcessor,
+        media_stream_constraints={"audio": True},
+        async_processing=True,
+    )
+    
+    if webrtc_ctx.state.playing:
+        processor = webrtc_ctx.audio_processor
+        
+        if processor and processor.transcription:
+            st.write(f"You said: {processor.transcription}")
+            
+            # Get response from Gemini
+            response = get_gemini_response(processor.transcription)
             st.write(f"Chatbot: {response}")
-            speak(response)
-            history.append(f"You: {user_input}")
-            history.append(f"Chatbot: {response}")
 
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Choose a page", ["Chatbot", "Image Analysis", "Document Summarization", "Voice Assistant"])
